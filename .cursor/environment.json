@@ -1,0 +1,4 @@
+{
+  "name": "OpensCAD",
+  "install": "bash scripts/install-openscad.sh"
+}

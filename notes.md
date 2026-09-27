@@ -1,0 +1,3 @@
+- [ ] Local PC workflow — prefer local files; [zip](/cursor/stores/self/artifacts/openscad-playground.zip) or recreate tree; [get on PC](/cursor/stores/self/docs/get-on-pc.md)
+- [ ] [Blueprint](/cursor/stores/self/docs/blueprint.md) — still empty; 4 rules await Marc’s OK
+- [x] [Setup OpenSCAD FDM playground](https://cursor.com/agents/bc-772aab9d-0876-5064-a2ed-19cee4988876) — Customizer parts, STL export, 3×18650 holder on `cursor/openscad-playground-8876`
