@@ -1,0 +1,10 @@
+---
+description: OpensCAD project context pointer
+alwaysApply: true
+---
+
+Follow `docs/project-context.md` for goals and scope.
+
+- **Part design** → `BLUEPRINT.md` only (geometry/fit/print intent for the product). Do not duplicate those specs in agent rules.
+- **Agent authoring / workflow** → `.cursor/rules/` (see `docs-and-blueprint.mdc`, `openscad-parameters.mdc`). No part-specific geometry here.
+- **Tooling / IDE** → `docs/setup-environment.md` and `.vscode/` (keep general; run `scripts/setup-environment.ps1` when applying)

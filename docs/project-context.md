@@ -3,23 +3,25 @@
 ## Goal
 Experiment with OpenSCAD to design parametric 3D parts and export STLs for FDM printing.
 
-## Environment
-- **Marc’s existing local OpenSCAD install is accepted** — no need to upgrade or switch to nightly for day-to-day editing/export
-- Any working `openscad` CLI is fine for STL export (`make stls`)
-- Cloud/CI: `scripts/install-openscad.sh` installs distro OpenSCAD when missing (optional nightly via `OPENSCAD_USE_NIGHTLY=1`)
-- Parametric adjustments for every provided measurement (named parameters at top of each `.scad`; no buried magic numbers)
+## Where things live
+- **Part design specifications** → [`BLUEPRINT.md`](../BLUEPRINT.md) (product geometry/fit/print intent only)
+- **Tooling / IDE environment** → [`setup-environment.md`](./setup-environment.md) (keep general; bindings in `.vscode/` + `scripts/`)
+- **Agent authoring / workflow** → `.cursor/rules/` (Customizer structure, naming, Blueprint gate — not part geometry)
+
+## Environment (summary)
+- Follow the toolchain policy in `setup-environment.md` (OpenSCAD minimum `2025.01.01`; Nightly if missing or too old).
+- Parametric work uses named top-level parameters; Customizer group split and naming are agent rules (`.cursor/rules/openscad-parameters.mdc`), not Blueprint.
 
 ## Blueprint
-- Design implementations are recorded as rules in [Blueprint](/cursor/stores/self/docs/blueprint.md)
-- No add / edit / delete of Blueprint rules without Marc’s confirmation
-- Conflicting changes must be validated with Marc before applying
-- Until rules are confirmed, agents may **propose** rule text in summaries/PR descriptions only
+- Blueprint holds **part-design** specifications only.
+- Flow for **adds, changes, deletes, and conflicts**: agent proposes exact wording/action → user manually confirms each item (or a listed set) → only then update the file or conflicting design.
+- Agent instructions and authoring conventions do not belong in Blueprint.
 
 ## Scope (current)
 - Parametric `.scad` parts aimed at FDM (walls, tolerances, manifold solids)
 - STL export via OpenSCAD CLI
 - Practical print notes; slicer left to the user (PrusaSlicer / Orca / Cura)
-- 3×18650 clamp-in cell holder among example parts
+- Example parts under `parts/` (including a 3×18650 clamp-in cell holder)
 
 ## Out of scope (unless asked)
 - Web UI, auth, databases

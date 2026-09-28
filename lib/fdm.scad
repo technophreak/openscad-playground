@@ -21,6 +21,52 @@ module rounded_box(size, radius, center = true) {
         rounded_rect([size[0], size[1]], radius, center = true);
 }
 
+// 45° perimeter chamfer cutter: z=0 is the full outline, z=chamfer is inset.
+// Difference this from a solid to chamfer a top (or mirrored bottom) edge.
+module edge_chamfer_cutter(size_xy, corner_radius, chamfer) {
+    eps = helper_epsilon;
+    if (chamfer > 0) {
+        difference() {
+            translate([0, 0, -eps])
+                linear_extrude(height = chamfer + 2 * eps)
+                    offset(delta = eps)
+                        rounded_rect(size_xy, corner_radius, center = true);
+            hull() {
+                linear_extrude(height = eps)
+                    rounded_rect(size_xy, corner_radius, center = true);
+                translate([0, 0, chamfer])
+                    linear_extrude(height = eps)
+                        offset(delta = -chamfer)
+                            rounded_rect(size_xy, corner_radius, center = true);
+            }
+        }
+    }
+}
+
+// Rounded box with optional independent top / bottom outer-edge chamfers.
+module chamfered_rounded_box(
+    size,
+    corner_radius,
+    bottom_chamfer = 0,
+    top_chamfer = 0,
+    center = false
+) {
+    z0 = center ? -size[2] / 2 : 0;
+    difference() {
+        rounded_box(size, corner_radius, center = center);
+
+        if (bottom_chamfer > 0) {
+            translate([0, 0, z0 + bottom_chamfer])
+                mirror([0, 0, 1])
+                    edge_chamfer_cutter([size[0], size[1]], corner_radius, bottom_chamfer);
+        }
+        if (top_chamfer > 0) {
+            translate([0, 0, z0 + size[2] - top_chamfer])
+                edge_chamfer_cutter([size[0], size[1]], corner_radius, top_chamfer);
+        }
+    }
+}
+
 // Cylinder with optional countersink (flat-head screw seat).
 module countersunk_hole(d, h, cs_d = undef, cs_h = undef, center = false, fragments = undef) {
     fn = is_undef(fragments) ? default_fragments : fragments;

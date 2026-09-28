@@ -1,0 +1,45 @@
+---
+description: Generic OpenSCAD Customizer structure and parameter naming (agent authoring)
+globs: "**/*.scad"
+alwaysApply: false
+---
+
+# OpenSCAD parameters (agent authoring)
+
+These are **authoring conventions for agents**, not part-design Blueprint rules. Apply to every parametric `.scad` part unless the user directs otherwise.
+
+## Customizer parameter split
+
+Split top-level assignments into:
+
+1. **User-facing named groups** — `/* [GroupName] */` for values a user is likely to change in Customizer.
+2. **`/* [Hidden] */`** — design constants and uncommon knobs; still named top-level assignments (no magic numbers inside modules).
+
+- Order user groups by concern (e.g. what is being sized → functional features → enclosure/body → mounts), not by implementation order.
+- Put **derived** values after parameters; do not expose them in user groups.
+- Edit Hidden values in the `.scad` when tuning the design.
+
+## User-facing names
+
+OpenSCAD shows identifiers with underscores as spaces — choose names that read as plain labels.
+
+- Prefer full words over abbreviations: `corner_radius` not `fillet`/`r`, `floor_thickness` not `floor_t`.
+- Name by **what the user is adjusting**, not internal implementation.
+- Trailing comment on every parameter: `// mm — short plain-language meaning` (or `deg — …`).
+
+```scad
+// ❌ BAD
+/* [Body] */
+fillet = 1.2;  // mm
+t      = 2.0;  // mm
+
+// ✅ GOOD
+/* [Body] */
+corner_radius   = 1.2;  // mm — outer corner radius (plan view)
+wall_thickness  = 2.0;  // mm — outer wall thickness
+```
+
+## Hidden / derived
+
+- Clear named assignments; slightly shorter names OK if the comment stays unambiguous.
+- Derived: compute after parameters; never as Customizer-facing groups.

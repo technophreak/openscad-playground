@@ -1,0 +1,10 @@
+# Generated meshes
+stls/*.stl
+
+# Editor noise
+*.tmp
+*.bak
+*~
+.DS_Store
+.idea/
+.vscode/

@@ -1,13 +1,10 @@
 # Generated meshes
 stls/*.stl
 
-# OpenSCAD / editor noise
+# Editor noise
 *.tmp
 *.bak
 *~
 .DS_Store
 .idea/
 .vscode/
-
-# Local agent scratch
-agent-tools/
