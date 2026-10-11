@@ -17,15 +17,9 @@ That installs the OpenSCAD Cursor extensions and ensures an OpenSCAD **Nightly**
 ## Layout
 
 ```
-samples/cell_holder_18650_x3/   Shipped cell-holder sample
-  BLUEPRINT.md                   Specs for this sample only
-  cell_holder_18650_x3.scad
-samples/desk_lamp/               Shipped desk-lamp sample
-  BLUEPRINT.md                   Specs for this sample only
-  desk_lamp.scad
-samples/pen/                     Shipped pen sample (three objects)
-  BLUEPRINT.md                   barrel, cap, and cartridge
-  pen.scad                       show_barrel, show_cap, show_cartridge
+samples/<name>/                  Shipped example designs (see below)
+  BLUEPRINT.md                   Specs for that sample only
+  <name>.scad                    Implementation (+ preview.png screenshot)
 designs/<name>/                  Your designs, one folder each
   BLUEPRINT.md                   Specs for that design only
   <name>.scad
@@ -37,19 +31,18 @@ scripts/                         Environment setup and mesh export
 Makefile                         make exports / make part
 ```
 
-## Try a sample
+**`samples/`** holds complete example designs that ship with the repo. Each subdirectory is one design: its own Blueprint, OpenSCAD file(s), and a `preview.png`. Use them to learn the workflow or as a starting point; do not treat a sample as the active design unless you are editing that sample. New work belongs under `designs/`.
 
-Open `samples/pen/pen.scad` in the **OpenSCAD** desktop app → **Window → Customizer** → **F5**.
+## Samples
 
-The pen is the walk-through for several objects in one design: `show_barrel`, `show_cap`, and `show_cartridge` each hide only that object’s geometry. `export_format` chooses **STL** or **3MF**.
+| | |
+|:--|:--|
+| ![Cell holder](samples/cell_holder_18650/preview.png) | ![Desk lamp](samples/desk_lamp/preview.png) |
+| `samples/cell_holder_18650/` | `samples/desk_lamp/` |
+| ![Pen](samples/pen/preview.png) | |
+| `samples/pen/` | |
 
-Also shipped:
-
-| Sample | Path |
-|--------|------|
-| 3×18650 holder | `samples/cell_holder_18650_x3/cell_holder_18650_x3.scad` |
-| Desk lamp | `samples/desk_lamp/desk_lamp.scad` |
-| Pen | `samples/pen/pen.scad` |
+Open any sample `.scad` in the **OpenSCAD** desktop app → **Window → Customizer** → **F5**. Multi-object designs use `show_<object>` checkboxes so each Blueprint object can be hidden on its own. `export_format` chooses **STL** or **3MF**.
 
 In-editor preview: open a `.scad` and press **Ctrl+Shift+V**, or Command Palette → **Show OpenSCAD Preview**. Object colors need 3MF preview + lazy union + `scripts/openscad-cli.exe` (built by the setup script). Reload the Cursor window after setup; leave the Colors toggle on.
 
@@ -85,18 +78,18 @@ Each Blueprint object exports as its own file so the slicer loads separate parts
 
 ```bash
 make exports
-make part PART=samples/pen/pen
-make part PART=samples/pen/pen OBJECT=barrel
+make part PART=samples/<name>/<name>
+make part PART=samples/<name>/<name> OBJECT=<object>
 make exports FORMAT=3MF
 ```
 
 Or:
 
 ```powershell
-powershell -File scripts/export-meshes.ps1 -Part samples/pen/pen
+powershell -File scripts/export-meshes.ps1 -Part samples/<name>/<name>
 ```
 
-STL and 3MF both land under `exports/` (same tree). Examples: `exports/samples/pen/pen_barrel.stl`, `pen_cap.stl`, `pen_cartridge.stl` (or `.3mf`).
+STL and 3MF both land under `exports/` (same tree). Example pattern: `exports/samples/<name>/<name>_<object>.stl` (or `.3mf`).
 
 Override the OpenSCAD binary if needed:
 

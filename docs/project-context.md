@@ -22,7 +22,7 @@ Experiment with OpenSCAD to design parametric 3D parts and export meshes for FDM
 - Parametric `.scad` parts aimed at FDM (walls, tolerances, manifold solids)
 - One mesh file per Blueprint object (STL or 3MF) via OpenSCAD CLI / Makefile
 - Practical print notes; slicer left to the user (PrusaSlicer / Orca / Cura)
-- Shipped samples under `samples/` (cell holder, desk lamp, pen); user designs under `designs/`
+- Shipped example designs under `samples/`; user designs under `designs/`
 
 ## Out of scope (unless asked)
 - Web UI, auth, databases
