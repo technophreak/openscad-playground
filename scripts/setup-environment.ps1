@@ -34,6 +34,24 @@ function Find-OpenScadBinary {
   return $null
 }
 
+function Build-OpenScadCliShim {
+  $cs = Join-Path $root "scripts\openscad-cli.cs"
+  $exe = Join-Path $root "scripts\openscad-cli.exe"
+  if (-not (Test-Path $cs)) { return $null }
+  $csc = Join-Path $env:WINDIR "Microsoft.NET\Framework64\v4.0.30319\csc.exe"
+  if (-not (Test-Path $csc)) {
+    $csc = Join-Path $env:WINDIR "Microsoft.NET\Framework\v4.0.30319\csc.exe"
+  }
+  if (-not (Test-Path $csc)) {
+    Write-Host "WARN: csc.exe not found; cannot build openscad-cli.exe color shim"
+    return $null
+  }
+  Write-Host "== Building scripts/openscad-cli.exe (3MF color shim for Cursor preview) =="
+  & $csc /nologo /optimize+ /out:$exe $cs | Out-Host
+  if (-not (Test-Path $exe)) { throw "Failed to build $exe" }
+  return $exe
+}
+
 function Update-ExecutablePathSetting([string]$Binary) {
   $settingsPath = Join-Path $root ".vscode\settings.json"
   if (-not (Test-Path $settingsPath)) {
@@ -44,17 +62,32 @@ function Update-ExecutablePathSetting([string]$Binary) {
     $exeSibling = [IO.Path]::ChangeExtension($exePath, ".exe")
     if (Test-Path $exeSibling) { $exePath = $exeSibling }
   }
-  $json = Get-Content $settingsPath -Raw | ConvertFrom-Json
-  $json | Add-Member -NotePropertyName openscad.executablePath -NotePropertyValue $exePath -Force
-  # PowerShell ConvertFrom-Json turns dotted keys awkwardly; rewrite via hashtable textually
+  # Preview must use an .exe shim (Cursor spawn cannot run .cmd). The shim injects
+  # 3MF color flags — plain OpenSCAD basematerial export uses alpha 00 (all one color).
+  $shim = Build-OpenScadCliShim
+  $previewExe = if ($shim) { $shim } else { $exePath }
   $raw = Get-Content $settingsPath -Raw
+  $previewEsc = ($previewExe -replace '\\', '\\')
   if ($raw -match '"openscad\.executablePath"\s*:\s*"[^"]*"') {
-    $raw = $raw -replace '"openscad\.executablePath"\s*:\s*"[^"]*"', ("`"openscad.executablePath`": `"$($exePath -replace '\\','\\')`"")
+    $raw = $raw -replace '"openscad\.executablePath"\s*:\s*"[^"]*"', "`"openscad.executablePath`": `"$previewEsc`""
   } else {
     throw "openscad.executablePath key missing in .vscode/settings.json"
   }
+  # 3MF preview keeps Blueprint object colors; STL preview is monochrome.
+  if ($raw -match '"openscad\.previewFormat"\s*:\s*"[^"]*"') {
+    $raw = $raw -replace '"openscad\.previewFormat"\s*:\s*"[^"]*"', '"openscad.previewFormat": "3mf"'
+  } else {
+    $raw = $raw -replace '\}\s*$', "  ,`"openscad.previewFormat`": `"3mf`"`r`n}"
+  }
+  if ($raw -match '"openscad\.enableLazyUnion"\s*:\s*(true|false)') {
+    $raw = $raw -replace '"openscad\.enableLazyUnion"\s*:\s*(true|false)', '"openscad.enableLazyUnion": true'
+  } elseif ($raw -match '\}\s*$') {
+    $raw = $raw -replace '\}\s*$', "  ,`"openscad.enableLazyUnion`": true`r`n}"
+  }
   Set-Content -Path $settingsPath -Value $raw -Encoding utf8
-  Write-Host "Updated openscad.executablePath -> $exePath"
+  Write-Host "Updated openscad.executablePath -> $previewExe"
+  Write-Host "Real OpenSCAD binary: $exePath"
+  Write-Host "Set openscad.previewFormat -> 3mf + enableLazyUnion (required for object colors)"
 }
 
 $extensions = @(

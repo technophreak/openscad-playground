@@ -1,5 +1,5 @@
 ---
-description: Blueprint vs agent rules vs environment docs; Blueprint confirmation gate
+description: Blueprint vs agent rules vs environment docs; Blueprint confirmation gate and periodic lock-in
 alwaysApply: true
 ---
 
@@ -9,20 +9,64 @@ alwaysApply: true
 
 | Home | Contents |
 |---|---|
-| **`BLUEPRINT.md`** | **Part design only** — geometry, fit, retention, FDM print intent for the product, confirmed constraints on how the part must be shaped or used. |
+| **Design `BLUEPRINT.md`** | **Part design only** — geometry, fit, retention, FDM print intent for the objects in that design directory, confirmed constraints on how they must be shaped or used. |
 | **`.cursor/rules/`** | **Agent instructions** — how to author `.scad`/docs, Customizer structure, parameter naming, confirmation gates, workflow. Not product geometry. |
 | **`docs/setup-environment.md` + `.vscode/` + `scripts/`** | **Tooling / IDE** — extensions, settings patterns, toolchain install/version policy. |
 
 - Never put agent workflow or authoring conventions into Blueprint.
-- Never put part geometry/fit rules only in chat or agent rules when they are durable product specs — propose them for Blueprint instead.
-- **Agent instruction files must not contain part design.** Do not put product geometry, dimensions, hole positions, snap/fit/retention behavior, print orientation, or FDM intent for a specific part into `.cursor/rules/` (or other agent-instruction files). Those belong only in `BLUEPRINT.md` after confirmation. Generic authoring examples (e.g. how to name a parameter) are allowed; part-specific constraints are not.
+- Never put part geometry/fit rules only in chat or agent rules when they are durable product specs — propose them for that design’s Blueprint instead.
+- **Agent instruction files must not contain part design.** Do not put product geometry, dimensions, hole positions, snap/fit/retention behavior, print orientation, or FDM intent for a specific part into `.cursor/rules/` (or other agent-instruction files). Those belong only in the design’s `BLUEPRINT.md` after confirmation. Generic authoring examples (e.g. how to name a parameter) are allowed; part-specific constraints are not.
 - Keep setup instructions **general**; put machine- or path-specific values in `.vscode/` and setup scripts.
 - Prefer reusable checklists (e.g. `docs/setup-environment.md`) over chat-only setup advice.
 
+## Design directories (mandatory binding)
+
+A **design project** is one directory under `samples/` or `designs/` with exactly one `BLUEPRINT.md` and the `.scad` files that implement it.
+
+- When editing a `.scad`, the only Blueprint is the `BLUEPRINT.md` in that same directory.
+- Do not read, apply, or edit another directory’s Blueprint (including samples) unless the user explicitly asks to copy or compare.
+- `samples/` holds shipped examples. A sample is not the active design unless you are editing that sample.
+- If a `.scad` has no sibling `BLUEPRINT.md`, stop and ask which design it belongs to. Do not borrow another project’s Blueprint.
+- There is no repo-root Blueprint. Lookup is always the sibling file in the design directory.
+
 ## Design specifications (`BLUEPRINT.md`)
 
-- Blueprint answers: “What must be true about the **part**?”
+- Blueprint answers: “What must be true about the **objects** in this design?”
 - Project goals/scope live in `docs/project-context.md`; they are not a substitute for Blueprint.
+- Chat history is not the spec. Confirmed Blueprint entries stay in force across later iterations until a change is proposed and confirmed.
+
+### Object containers (mandatory)
+
+Every design Blueprint uses this shape. Headings are the containers; numbered entries inside them are the locked part specs.
+
+```markdown
+# Blueprint
+
+This file is the only spec for the OpenSCAD files in this directory.
+Confirmed entries stay in force until a change is proposed and confirmed.
+
+## Design
+Shared facts only: what this design is, and how its objects relate.
+
+1. ...
+
+## Objects
+
+### stand
+Geometry, fit, and print intent for this object only.
+
+1. ...
+
+### shade
+1. ...
+```
+
+- One design, one `BLUEPRINT.md`. Several objects live inside it as `###` sections under `## Objects`. `## Design` is only for relationships that apply to more than one object.
+- Each object section is a closed container. A request about one object may propose edits only in that section. It may also propose an edit under `## Design` when the shared relationship changes. It must not rewrite, drop, or restate another object's entries.
+- Adding an object means a new `###` section, confirmed before the geometry is treated as specified, plus a matching module or `.scad` file in that design directory. Do not append the new object's rules onto an existing object's list.
+- Do not implement a specified object with no section, and do not leave a confirmed section with no geometry. An existing part that has no confirmed section stays unspecified until entries are proposed and confirmed. Do not invent those entries while containerising.
+- The confirmation gate is per container. A change that touches two objects is two proposals, confirmed as a set before either is applied.
+- On a later iteration, confirmed entries in untouched containers still apply. Do not treat them as stale because they were not repeated in the latest message.
 
 ### Confirmation gate (mandatory)
 
@@ -38,7 +82,7 @@ Applies equally to:
 Flow:
 
 1. **Propose** the exact outcome in the reply: full copy-ready entry text for adds/changes; for deletes, state which numbered entry and why; for conflicts, quote the existing rule and the proposed resolution (change A, delete B, or keep A and adjust the design).
-2. **Stop.** Do not write `BLUEPRINT.md` / rule files, and do not implement conflicting part changes, in the same turn as the first proposal.
+2. **Stop.** Do not write that design’s `BLUEPRINT.md` / rule files, and do not implement conflicting part changes, in the same turn as the first proposal.
 3. **Wait** for the user to **manually confirm** — each item, or an explicit confirm of a listed set.
 4. **Only then** apply the confirmed add, change, deletion, or conflict resolution.
 
@@ -49,3 +93,28 @@ Also:
 - If work establishes or changes a durable **part-design** rule, stop after the design step and propose Blueprint text for confirmation.
 - Do **not** put agent/authoring conventions in Blueprint (Customizer group split, parameter naming style, commit process, IDE tips) — those go under `.cursor/rules/` and still need suggested wording + user confirm before editing rule files when the change is a standing convention.
 - Until an entry is confirmed and in Blueprint, it is not a standing part-design rule—only chat context.
+
+### Periodic Blueprint lock-in (mandatory)
+
+Chat iteration is not the spec. As a design takes shape, durable part-design decisions must be offered for Blueprint lock-in on a regular cadence—not only when the user remembers to ask.
+
+**When to prompt (any one is enough):**
+
+1. **After a coherent design beat** — a fit, retention, silhouette, print-orientation, or object-relationship choice has landed and the next edits build on it.
+2. **After several geometry iterations** — about 3–5 meaningful part changes on the same object/design since the last Blueprint proposal (or since the session started with no proposal).
+3. **Before switching focus** — about to move to another object, another design directory, export/commit/publish, or a different task while unlocked durable decisions remain only in chat.
+4. **When the user signals a pause** — e.g. “looks good”, “perfect”, “ok next”, or similar, and Blueprint is behind the geometry.
+
+**What to do:**
+
+1. Briefly list the durable decisions not yet in that design’s `BLUEPRINT.md` (by object container).
+2. Propose exact copy-ready Blueprint add/change/delete text (same confirmation gate as always).
+3. **Stop and wait** for confirm before writing `BLUEPRINT.md`.
+4. If nothing durable is pending, do not prompt.
+
+**Do not:**
+
+- Skip lock-in prompts because “we’re still iterating” while durable constraints are already being relied on.
+- Dump every tweak (one-off numeric nudges with no lasting rule). Prefer stable intent (“seat notch ~5% span, not a full rim”) over ephemeral Customizer values unless the user wants a dimension locked.
+- Auto-write Blueprint without confirm.
+- Nag every turn—prompt at the cadences above, then wait.

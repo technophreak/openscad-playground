@@ -5,6 +5,6 @@ alwaysApply: true
 
 Follow `docs/project-context.md` for goals and scope.
 
-- **Part design** → `BLUEPRINT.md` only (geometry/fit/print intent for the product). Do not duplicate those specs in agent rules.
+- **Part design** → each design directory’s `BLUEPRINT.md` only (geometry/fit/print intent for that design). Do not duplicate those specs in agent rules. See `docs-and-blueprint.mdc` for per-design lookup and object containers.
 - **Agent authoring / workflow** → `.cursor/rules/` (see `docs-and-blueprint.mdc`, `openscad-parameters.mdc`). No part-specific geometry here.
 - **Tooling / IDE** → `docs/setup-environment.md` and `.vscode/` (keep general; run `scripts/setup-environment.ps1` when applying)

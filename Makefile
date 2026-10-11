@@ -1,35 +1,41 @@
-# OpensCAD — FDM part playground
-# Usage: make stls   |  make clean  |  make part PART=cable_clip
+# OpensCAD — FDM design playground
+# Usage:
+#   make exports
+#   make part PART=samples/pen/pen
+#   make part PART=samples/pen/pen OBJECT=barrel
+#   make exports FORMAT=3MF
+#   make clean
+#
+# Or call the exporter directly:
+#   powershell -File scripts/export-meshes.ps1 -Part samples/pen/pen
 
-OPENSCAD ?= openscad
-PARTS_DIR := parts
-STL_DIR   := stls
-PARTS     := $(wildcard $(PARTS_DIR)/*.scad)
-STLS      := $(patsubst $(PARTS_DIR)/%.scad,$(STL_DIR)/%.stl,$(PARTS))
+OPENSCAD ?=
+FORMAT   ?=
+PART     ?=
+OBJECT   ?=
 
-.PHONY: all stls clean part help
+.PHONY: all exports stls clean part help
 
-all: stls
+all: exports
 
 help:
 	@echo "Targets:"
-	@echo "  make stls                 Render all parts/*.scad → stls/*.stl"
-	@echo "  make part PART=name       Render one part (e.g. PART=cell_holder_18650_x3)"
-	@echo "  make clean                Remove generated STLs"
+	@echo "  make exports                           Export every Blueprint object under samples/ and designs/"
+	@echo "  make part PART=samples/pen/pen         Export all objects of one design"
+	@echo "  make part PART=samples/pen/pen OBJECT=barrel"
+	@echo "  make exports FORMAT=3MF                Override Customizer export_format (STL or 3MF)"
+	@echo "  make clean                             Remove generated meshes under exports/"
 	@echo ""
-	@echo "Override CLI:  make stls OPENSCAD=/path/to/openscad"
+	@echo "Override CLI:  make exports OPENSCAD=C:/path/to/openscad.exe"
+	@echo "(make stls is an alias for make exports)"
 
-stls: $(STLS)
+exports:
+	powershell -NoProfile -File scripts/export-meshes.ps1 $(if $(OPENSCAD),-OpenSCAD "$(OPENSCAD)") $(if $(FORMAT),-Format $(FORMAT))
 
-$(STL_DIR)/%.stl: $(PARTS_DIR)/%.scad lib/fdm.scad
-	@mkdir -p $(STL_DIR)
-	@echo "Rendering $< → $@"
-	$(OPENSCAD) -o $@ $<
+stls: exports
 
 part:
-	@test -n "$(PART)" || (echo "Set PART=name (e.g. PART=cable_clip)"; exit 1)
-	@mkdir -p $(STL_DIR)
-	$(OPENSCAD) -o $(STL_DIR)/$(PART).stl $(PARTS_DIR)/$(PART).scad
+	powershell -NoProfile -File scripts/export-meshes.ps1 -Part "$(PART)" $(if $(OBJECT),-Object $(OBJECT)) $(if $(OPENSCAD),-OpenSCAD "$(OPENSCAD)") $(if $(FORMAT),-Format $(FORMAT))
 
 clean:
-	rm -f $(STL_DIR)/*.stl
+	powershell -NoProfile -Command "Remove-Item -Recurse -Force -ErrorAction SilentlyContinue exports/samples,exports/designs; Remove-Item -Force -ErrorAction SilentlyContinue exports/*.stl,exports/*.3mf"

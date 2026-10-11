@@ -1,5 +1,8 @@
-# Generated meshes
-stls/*.stl
+# Generated meshes — STL and 3MF share exports/
+exports/**/*.stl
+exports/**/*.3mf
+exports/*.stl
+exports/*.3mf
 
 # Editor noise
 *.tmp
@@ -8,3 +11,7 @@ stls/*.stl
 .DS_Store
 .idea/
 .vscode/
+
+# Built locally by scripts/setup-environment.ps1
+scripts/openscad-cli.exe
+

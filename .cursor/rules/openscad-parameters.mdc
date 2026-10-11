@@ -15,9 +15,58 @@ Split top-level assignments into:
 1. **User-facing named groups** — `/* [GroupName] */` for values a user is likely to change in Customizer.
 2. **`/* [Hidden] */`** — design constants and uncommon knobs; still named top-level assignments (no magic numbers inside modules).
 
-- Order user groups by concern (e.g. what is being sized → functional features → enclosure/body → mounts), not by implementation order.
+- Order user groups by concern (e.g. Objects → Export → what is being sized → functional features → enclosure/body → mounts), not by implementation order.
 - Put **derived** values after parameters; do not expose them in user groups.
 - Edit Hidden values in the `.scad` when tuning the design.
+
+## Objects checkboxes
+
+- Every Blueprint `###` object has one Customizer checkbox, `show_<section_name>`, default `true`, in a user-facing `/* [Objects] */` group. `### cap` means `show_cap`. The identifier matches the heading exactly.
+- That checkbox wraps the object's whole module. Off means none of that object's solids are in the model. It must not hide another object's geometry, and it must not leave a piece of its own behind.
+- Do not add a show-checkbox for a sub-feature. Only Blueprint objects get one.
+- Renaming an object renames its checkbox in the same change.
+- Geometry that exists without a confirmed Blueprint section may keep a preview checkbox only until that section is confirmed; do not treat it as a specified object for export.
+
+## Object preview colors
+
+- Every object instance in the design is wrapped with `preview_object(color_index_<name>)` from `lib/fdm.scad` so F5 shows each object in a different color.
+- Assign a **stable** integer `color_index_<name>` in `/* [Hidden] */` (or next to the Objects group). Do not renumber when editing geometry — the index is the persistent identity of that object’s color.
+- Use the shared `preview_palette` in `lib/fdm.scad`. Do not reorder or replace palette entries; new hues are appended only. Indices wrap with `% len(preview_palette)`.
+- Color comes from OpenSCAD `color()` and shows in Cursor preview only when `openscad.previewFormat` is `"3mf"` (STL preview is monochrome). Desktop OpenSCAD shows it with **F5** (not F6). Exported STL stays uncolored; 3MF can keep colors when OpenSCAD writes them.
+
+```scad
+/* [Hidden] */
+color_index_barrel     = 0;
+color_index_cap        = 1;
+color_index_cartridge  = 2;
+
+if (show_barrel)
+    preview_object(color_index_barrel)
+        pen_barrel();
+```
+
+## Export format dropdown
+
+Every design `.scad` always has:
+
+```scad
+/* [Export] */
+export_format = "STL"; // [STL, 3MF]
+```
+
+- Always present, even for a one-object design. Options are only `STL` and `3MF`.
+- It does not change the preview solid. OpenSCAD CLI and the Makefile choose the file type from this value (output extension `.stl` or `.3mf`).
+- `make exports` / `make part` read the design's `export_format` default, or override with `FORMAT=STL` / `FORMAT=3MF`.
+
+## Per-object mesh export
+
+Slicers must see each Blueprint object as its own printable part. Preview may show several objects together; export does not weld them.
+
+- Export one mesh file per Blueprint object into `exports/`: `exports/<design-path>/<design>_<object>.<ext>`. STL and 3MF share that tree.
+- Each export run enables only that object's `show_*`; other objects are off so they are not in the mesh.
+- An object may be several disconnected solids in its own file when that is how it prints. Different Blueprint objects must not share one file.
+- Do not `union()` unrelated Blueprint objects into one solid for export. Assembly preview is separate top-level `if (show_*)` calls, not one fused body.
+- Format is the container (STL or 3MF); it does not put every object into a single multi-body file.
 
 ## User-facing names
 

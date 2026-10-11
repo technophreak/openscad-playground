@@ -1,10 +1,34 @@
 // Shared FDM-friendly helpers for OpensCAD parts.
-// Include from parts with: include <../lib/fdm.scad>;
+// Include from a design under samples/ or designs/ with:
+//   include <../../lib/fdm.scad>;
 
 // Default mesh density when a caller does not pass fragments=.
 default_fragments = 48;
 // Tiny overshoot used only inside helper boolean cleanup (not a part dimension).
 helper_epsilon    = 0.01;
+
+// Stable preview palette for Blueprint objects (F5 color only; not written into STL).
+// Assign each object a fixed color_index_<object> and wrap with preview_object(index).
+// Cool tones first; warm coral/peach later so default index 0/1 are not tan/salmon.
+preview_palette = [
+    [0.65, 0.78, 0.90], // 0 pastel blue
+    [0.68, 0.86, 0.72], // 1 pastel green
+    [0.62, 0.86, 0.88], // 2 pastel teal
+    [0.82, 0.72, 0.90], // 3 pastel purple
+    [0.78, 0.78, 0.82], // 4 pastel slate
+    [0.96, 0.86, 0.62], // 5 pastel amber
+    [0.96, 0.78, 0.68], // 6 pastel peach
+    [0.93, 0.68, 0.66], // 7 pastel coral
+];
+
+function preview_color(index) =
+    preview_palette[abs(index) % len(preview_palette)];
+
+// Preview-only color wrapper. Use one stable color_index_* per Blueprint object.
+module preview_object(index) {
+    color(preview_color(index))
+        children();
+}
 
 // Rounded rectangle extruded along Z (2D fillet → manifold solid).
 module rounded_rect(size, radius, center = true) {
