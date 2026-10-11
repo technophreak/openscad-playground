@@ -1,4 +1,4 @@
-// 3×18650 clamp-in cell holder — single-piece FDM tray with snap lips.
+// 18650 clamp-in cell holder — parametric cell count, FDM tray with snap lips.
 //
 // Customizer: Window → Customizer, tweak user groups below, F5 to preview.
 // Design constants live under [Hidden] — edit in the .scad if needed.
@@ -394,7 +394,7 @@ module mount_holes() {
     }
 }
 
-module cell_holder_18650_x3() {
+module cell_holder_18650() {
     assert(clamp_gap < cell_diameter, "clamp_gap must be < cell_diameter to retain the cell");
     assert(clamp_gap < pocket_d, "clamp_gap must be < pocket_d for retention");
     assert(clamp_gap > 0, "clamp_gap must be > 0");
@@ -577,7 +577,7 @@ module cell_holder_lid() {
 
 if (show_tray)
     preview_object(color_index_tray)
-        cell_holder_18650_x3();
+        cell_holder_18650();
 
 if (show_lid)
     // Same seat whether tray is shown or not: plate on rim height, lip down

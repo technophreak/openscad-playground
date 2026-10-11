@@ -37,8 +37,8 @@ Makefile                         make exports / make part
 
 | | |
 |:--|:--|
-| ![Cell holder](samples/cell_holder_18650_x3/preview.png) | ![Desk lamp](samples/desk_lamp/preview.png) |
-| `samples/cell_holder_18650_x3/` | `samples/desk_lamp/` |
+| ![Cell holder](samples/cell_holder_18650/preview.png) | ![Desk lamp](samples/desk_lamp/preview.png) |
+| `samples/cell_holder_18650/` | `samples/desk_lamp/` |
 | ![Pen](samples/pen/preview.png) | |
 | `samples/pen/` | |
 
